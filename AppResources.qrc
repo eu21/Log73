@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>open.png</file>
+        <file>Save.png</file>
+        <file>Saveas.png</file>
+        <file>new.png</file>
+        <file>73.png</file>
+        <file>map.PNG</file>
+        <file>belmap.gif</file>
+        <file>author.jpg</file>
+        <file>Edit.png</file>
+        <file>EditDone.png</file>
+        <file>73.ico</file>
+    </qresource>
+</RCC>
