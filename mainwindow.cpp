@@ -1,10 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <map.h>
-#include <about.h>
-#include <QFile>
+#include "map.h"
+#include "about.h"
+#include "regions.h"
 #include "dbconnection.h"
-#include <QTime>
 
 #include <QSqlTableModel>
 #include <QTableView>
@@ -15,8 +14,9 @@
 #include <QtSql>
 #include <QSqlTableModel>
 
+#include <QTime>
+#include <QFile>
 #include <QtCore>
-
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -24,7 +24,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
 
+
+
     ui->setupUi(this);
+
+    MainWindow::LastLangReadAndApply();
 
     MainWindow::refreshtable(); //write data from DB when app starts
 
@@ -65,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //initialize txn end
 
       if( !file.exists() )
-      {
+      {QMessageBox::StandardButton reply;
 ;
 
       }
@@ -101,8 +105,15 @@ else
       }
       }
 
-    ui->label_5->setVisible(false);
+    ui->label_callsign->setVisible(false);
+    ui->label_txn->setVisible(false);
+    ui->label_rxn->setVisible(false);
+    ui->label_region->setVisible(false);
+    ui->label_qsy->setVisible(false);
     ui->label_6->setVisible(false);
+
+
+
 
 
 }
@@ -116,13 +127,20 @@ MainWindow::~MainWindow()
 void MainWindow::on_write()
 {
 
- ui->label_5->setVisible(false);
- ui->label_6->setVisible(false);
+
+    ui->label_callsign->setVisible(false);
+    ui->label_txn->setVisible(false);
+    ui->label_rxn->setVisible(false);
+    ui->label_region->setVisible(false);
+    ui->label_qsy->setVisible(false);
 
  QString CALLSIGN = ui->lineEdit->text();
 
 
  CALLSIGN = CALLSIGN.trimmed();
+
+ QString RAION = (ui->lineEdit_4->text());
+ RAION = RAION.toUpper();
 
      if (!MainWindow::isThereAnyQSOinThisTur(CALLSIGN))
   {
@@ -130,37 +148,80 @@ void MainWindow::on_write()
           QPalette *palette = new QPalette();
           palette->setColor(QPalette::Base,Qt::white);
           ui->lineEdit->setPalette(*palette);
+
+          //Create QPalette here and set its Color and Color Role
+          //QPalette *palette = new QPalette();
+          palette->setColor(QPalette::Base,Qt::white);
+          ui->lineEdit_4->setPalette(*palette);
   }
 
          if ((ui->lineEdit->text()) == "")
  {
-     ui->label_5->setVisible(true);
-     ui->label_5->setAlignment(Qt::AlignCenter);
-     ui->label_5->setText(" CALLSIGN ");
+     ui->label_callsign->setVisible(true);
+     ui->label_qsy->setVisible(false);
+     ui->label_callsign->setAlignment(Qt::AlignCenter);
+     //ui->label_5->setText(tr(" CALLSIGN "));
      ui->lineEdit->setFocus();
  }
  else if ((ui->lineEdit_2->text()) == "")
  {
-     ui->label_5->setVisible(true);
-     ui->label_5->setAlignment(Qt::AlignCenter);
-     ui->label_5->setText(" Tx No ");
+     ui->label_txn->setVisible(true);
+     ui->label_txn->setAlignment(Qt::AlignCenter);
+     //ui->label_txn->setText(" Tx No ");
      ui->lineEdit_2->setFocus();
  }
  else if ((ui->lineEdit_3->text()) == "")
  {
-     ui->label_5->setVisible(true);
-     ui->label_5->setAlignment(Qt::AlignCenter);
-     ui->label_5->setText(" Rx No ");
+     ui->label_rxn->setVisible(true);
+     ui->label_rxn->setAlignment(Qt::AlignCenter);
+     //ui->label_rxn->setText(" Rx No ");
      ui->lineEdit_3->setFocus();
  }
 else if ((ui->lineEdit_4->text()) == "")
  {
 
-     ui->label_5->setVisible(true);
-     ui->label_5->setAlignment(Qt::AlignCenter);
-     ui->label_5->setText(" Region ");
+     ui->label_region->setVisible(true);
+     ui->label_region->setAlignment(Qt::AlignCenter);
+     //ui->label_region->setText(tr(" Region "));
      ui->lineEdit_4->setFocus();
  }
+else if(!MainWindow::IsThereSuchRegion(RAION))
+         {
+
+
+
+             QMessageBox::StandardButton reply;
+             QString lang = MainWindow::curlangGet();
+             QString title;
+             QString question;
+
+                 if (lang == "RU")
+                 {
+                     title = title.fromUtf8("Внимание!");
+                     question = question.fromUtf8("Не существующий регион! Открыть форму добавления региона?");
+                 }
+
+                 if (lang == "EN")
+                 {
+                     title = tr("Attention!");
+                     question = tr("Therer is no such region! Whould you like to open regions form?");
+                 }
+
+             reply = QMessageBox::warning(this, title,
+                                           question,
+                                           QMessageBox::Yes | QMessageBox::No );
+             if (reply == QMessageBox::Yes)
+             {
+                 MainWindow::on_actionRegions_triggered();
+             }
+             else
+             {
+                 ui->lineEdit_4->setFocus();
+             }
+
+
+
+         }
 
  else
     {
@@ -344,6 +405,8 @@ palette->setColor(QPalette::Base,Qt::white);
 ui->textEdit->setPalette(*palette);
 
 
+
+
 ui->textEdit->setFocusPolicy(Qt::NoFocus);
 
 MainWindow::refreshtable();
@@ -354,22 +417,39 @@ MainWindow::refreshtable();
 
 void MainWindow::on_actionNew_triggered()
 {
+    QMessageBox::StandardButton reply;
+    QString lang = MainWindow::curlangGet();
+    QString title;
+    QString question;
 
-//MainWindow::backuplog();
+        if (lang == "RU")
+        {
+            title = title.fromUtf8("Внимание!");
+            question = question.fromUtf8("Удалить все связи из Log73?");
+        }
 
-    mFilename = "";
-    ui->textEdit->setPlainText("");
-    ui->lineEdit->QLineEdit::clear();
-    ui->lineEdit_2->QLineEdit::clear();
-    ui->lineEdit_3->QLineEdit::clear();
-    ui->lineEdit_4->QLineEdit::clear();
-    ui->lineEdit_2->QLineEdit::insert("1");
+        if (lang == "EN")
+        {
+            title = tr("Attention!");
+            question = tr("Delete all QSO's from Log73?");
+        }
 
-    dbconnection delrec;
-    delrec.deleteRecords();
+//    QEvent LanguageChange = QEvent::LanguageChange;
+//    MainWindow::changeEvent(&LanguageChange);
 
-    MainWindow::refreshtable();
-  //  MainWindow::showscore();
+
+
+    reply = QMessageBox::warning(this, title,
+                                  question,
+                                  QMessageBox::Yes | QMessageBox::No );
+            if (reply == QMessageBox::Yes)
+    {
+        MainWindow::emptyAllrec();
+    }
+
+
+
+
 
 }
 
@@ -392,7 +472,7 @@ void MainWindow::on_actionSave_as_triggered()
 {
     MainWindow::exportfromDB();
 
-   QString file = QFileDialog::getSaveFileName(this,"Save log as txt");
+   QString file = QFileDialog::getSaveFileName(this,(tr("Save log as txt")));
    if (!file.isEmpty())
     {
        mFilename = file;
@@ -410,7 +490,7 @@ void MainWindow::on_actionSave_as_triggered()
 void MainWindow::on_actionOpen_triggered()
 {
     MainWindow::backuplog();
-    QString file = QFileDialog::getOpenFileName(this,"Open a logfile.txt");
+    QString file = QFileDialog::getOpenFileName(this,(tr("Open a logfile.txt")));
 
     if (!file.isEmpty())
     {
@@ -429,6 +509,7 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::retPressed()
 {
+
     QString CALLSIGN = ui->lineEdit->text();
 
     if (CALLSIGN =="")
@@ -438,45 +519,51 @@ void MainWindow::retPressed()
     CALLSIGN = CALLSIGN.toUpper();
     ui->lineEdit->setText(CALLSIGN);
 
+    MainWindow::insertRegion();
+
+
     QString RAION = (ui->lineEdit_4->text());
     RAION = RAION.toUpper();
     RAION = RAION.trimmed();
     ui->lineEdit_4->setText(RAION);
 
 
-                if ((ui->lineEdit->text()) == MainWindow::sameCALLSIGN)
-            {
-                ui->label_5->setVisible(true);
-                ui->label_6->setVisible(false);
-                ui->label_5->setAlignment(Qt::AlignCenter);
-                ui->label_5->setText(" Same CALLSIGN ");
-                ui->lineEdit->setFocus();
-            }
-
     if (MainWindow::isThereAnyQSOinThisTur(CALLSIGN))
      {
          ui->label_6->setVisible(false);
-         ui->label_5->setVisible(true);
-         ui->label_5->setAlignment(Qt::AlignCenter);
-         ui->label_5->setText(" QSY  " + CALLSIGN);
+         ui->label_qsy->setVisible(true);
+         ui->label_callsign->setVisible(false);
+         ui->label_qsy->setAlignment(Qt::AlignCenter);
+         ui->label_qsy->setText(" QSY  " + CALLSIGN);
 
     //Create QPalette here and set its Color and Color Role
                  QPalette *palette = new QPalette();
                  palette->setColor(QPalette::Base,Qt::red);
                  ui->lineEdit->setPalette(*palette);
+                 ui->lineEdit_4->setText("");
 
                  ui->lineEdit->setFocus();
      }
 
-    else
-        MainWindow::on_write();
+//    else
+
+
+//        MainWindow::on_write();
 
 }
 
 void MainWindow::on_actionShowMap_triggered()
 {
     myMap = new map(this);
+
+ // myMap->setAttribute(Qt::WA_WState_WindowOpacitySet);
+  //  myMap->setAttribute(Qt::WA_ShowWithoutActivating);
+   // myMap->setAttribute (Qt::WA_DontShowOnScreen, false) ;
+
+    myMap->setFocusPolicy(Qt::NoFocus);
     myMap->show();
+
+
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -581,240 +668,7 @@ void MainWindow::on_actionEdit_done_triggered()
 
 
 }
-/*
-void MainWindow::on_pushButton_2_clicked()
-{
 
-        ui->label_5->setVisible(false);
-        ui->label_6->setVisible(false);
-
-        if ((ui->lineEdit->text()) == "")
-        {
-            ui->label_5->setVisible(true);
-            ui->label_5->setAlignment(Qt::AlignCenter);
-            ui->label_5->setText(" CALLSIGN ");
-            ui->lineEdit->setFocus();
-        }
-        else if ((ui->lineEdit_2->text()) == "")
-        {
-            ui->label_5->setVisible(true);
-            ui->label_5->setAlignment(Qt::AlignCenter);
-            ui->label_5->setText(" Tx No ");
-            ui->lineEdit_2->setFocus();
-        }
-        else if ((ui->lineEdit_3->text()) == "")
-        {
-            ui->label_5->setVisible(true);
-            ui->label_5->setAlignment(Qt::AlignCenter);
-            ui->label_5->setText(" Rx No ");
-            ui->lineEdit_3->setFocus();
-        }
-       else if ((ui->lineEdit_4->text()) == "")
-        {
-
-            ui->label_5->setVisible(true);
-            ui->label_5->setAlignment(Qt::AlignCenter);
-            ui->label_5->setText(" Region ");
-            ui->lineEdit_4->setFocus();
-        }
-
-        else
-           {
-           ui->label_6->setVisible(true);
-           ui->label_6->setAlignment(Qt::AlignCenter);
-           ui->label_6->setText("73!");
-
-           QTime time = QTime::currentTime();
-           QString timeString = time.toString("hh:mm");
-
-           QString CALLSIGN = (ui->lineEdit->text());
-
-           MainWindow::sameCALLSIGN = CALLSIGN;
-
-           CALLSIGN = CALLSIGN.toUpper();        // str == "TEXT"
-
-
-           QString RAION = (ui->lineEdit_4->text());
-           RAION = RAION.toUpper();
-
-
-           QString NumPeredstr = (ui->lineEdit_2->text());
-
-           bool result;
-
-           int NumPered = NumPeredstr.toInt(&result, 10);
-
-           int NumPeredNext = NumPered+1;
-
-           QString NumPeredNextStr = "";
-
-           NumPeredNextStr.append(QString("%1").arg(NumPeredNext));
-
-           ui->lineEdit_2->QLineEdit::clear();
-           ui->lineEdit_2->QLineEdit::insert(NumPeredNextStr);
-
-           QString Str0 = "";
-           QString Str1 = "0";
-           QString Str2 = "00";
-
-
-
-           QString NumPeredStr;
-
-
-           if ((NumPered < 10) && (NumPered > 0))
-           {
-               Str2.append(QString("%1").arg(NumPered));
-               NumPeredStr=(Str2);
-           }
-           else if ((NumPered < 100) && (NumPered > 9))
-           {
-               Str1.append(QString("%1").arg(NumPered));
-               NumPeredStr=Str1;
-           }
-           else if (NumPered > 99)
-           {
-               Str0.append(QString("%1").arg(NumPered));
-               NumPeredStr=Str0;
-           }
-
-
-           QString poluchStr0 = "";
-           QString poluchStr1 = "0";
-           QString poluchStr2 = "00";
-
-
-
-           QString NumPoluchStr = (ui->lineEdit_3->text());
-
-       //    bool result;
-
-           int NumPoluch = NumPoluchStr.toInt(&result, 10);
-
-
-           if ((NumPoluch < 10) && (NumPoluch > 0))
-           {
-               poluchStr2.append(QString("%1").arg(NumPoluch));
-               NumPoluchStr=(poluchStr2);
-           }
-           else if ((NumPoluch < 100) && (NumPoluch > 9))
-           {
-               poluchStr1.append(QString("%1").arg(NumPoluch));
-               NumPoluchStr=poluchStr1;
-           }
-           else if (NumPoluch > 99)
-           {
-               poluchStr0.append(QString("%1").arg(NumPoluch));
-               NumPoluchStr=poluchStr0;
-           }
-
-
-
-           QString line;
-           line = timeString + "\t" + CALLSIGN + "\t" +"\t"+ NumPeredStr + "\t" +"\t"+ NumPoluchStr + "\t"+"\t" + RAION;
-
-           //ui->textEdit->append(line);
-
-
-
-}
-
-
-}*/
-
-
-
-
-
-
-
-
-
-/*
-bool MainWindow::on_pushButton_3_clicked()
-{
-    QString CALLSIGN = (ui->lineEdit->text());
-    CALLSIGN = CALLSIGN.toUpper();        // str == "TEXT"
-
-//    dbconnection ThereWasQSOlist;
-//    QStringList listofduplicates = ThereWasQSOlist.ThereWasQSOlist(CALLSIGN) ;
-//    ui->listWidget->clear();
-//    ui->listWidget->addItems(listofduplicates);
-
-
-
-        dbconnection ThereWasQSO;
-        QString duplicat = ThereWasQSO.ThereWasQSO(CALLSIGN) ;
-        ui->lineEdit_5->QLineEdit::clear();
-        ui->lineEdit_5->QLineEdit::insert(duplicat);
-
-    dbconnection ThereWasQSOtime;
-    QStringList listofduplicatesTime = ThereWasQSOtime.ThereWasQSOtime(CALLSIGN) ;
-    ui->listWidget_2->clear();
-    ui->listWidget_2->addItems(listofduplicatesTime);
-qDebug()<< listofduplicatesTime.count();
-    QString lastQSO = listofduplicatesTime.value(listofduplicatesTime.count()-1);
-qDebug()<< lastQSO;
-
-QTime t = QTime::fromString(lastQSO,"hh:mm");
-qDebug()<<t;
-
-QTime tcur = QTime::currentTime();
-QTime difrenc = MainWindow::diffr (tcur,t );
-
-qDebug()<<difrenc;
-
-
-QString difrencString = difrenc.toString("hh:mm");
-ui->lineEdit_6->QLineEdit::clear();
-ui->lineEdit_6->QLineEdit::insert(difrencString);
-qDebug()<<difrencString;
-
-
-QTime timeCur = QTime::currentTime();
-QString (timeStringCur) = timeCur.toString("hh:mm");
-
-if (timeStringCur == difrencString)
-ui->lineEdit_6->QLineEdit::clear();
-
-if (timeCur>t)
-    qDebug() << "timeCur > t" ;
-
-
-QString AllowedMinutesStr = (ui->lineEdit_7->text());
-
-bool result;
-
-int AllowedMinutes = AllowedMinutesStr.toInt(&result, 10);
-
-AllowedMinutes++;
-
-qDebug() << "AllowedMinutes " << AllowedMinutes;
-
-
-QTime n;
- n = t.addSecs(AllowedMinutes*60);                // t == 14:01:10
-bool AllowToGo;
-
-if (timeCur>n)
-{
-    qDebug() << "timeCur < n. Congrat! AllowedMinutes estim" ;
-AllowToGo=true;
- qDebug() << AllowToGo;
-}
-else
-{
-    qDebug() << "timeCur > n. AllowedMinutes not estim";
-   AllowToGo = false;
- qDebug() << AllowToGo;
-
-}
-
-    return AllowToGo;
-
-
-}
-*/
 QTime MainWindow::diffr ( const QTime &t1,const QTime &t2 )
 {
 #define SEC_MS	1000
@@ -874,9 +728,12 @@ bool MainWindow::isThereAnyQSOinThisTur(QString CALLSIGN)
     dbconnection qsoDB;
     bool qso = qsoDB.isThereAnyQSOinThisTur(CALLSIGN, tur);
 
-    qDebug() << "isThereAnyQSOinThisTur - " << qso;
+    //qDebug() << "isThereAnyQSOinThisTur - " << qso;
+
+    qsoDB.delEmptyRecordsFromContest();
 
     return qso;
+
 
 
 }
@@ -895,24 +752,31 @@ QString MainWindow::rstrip(const QString& str) {
 
 void MainWindow::isQSOforTab()
 {
+
+
+
     QString CALLSIGN = ui->lineEdit->text();
-
-
     CALLSIGN = CALLSIGN.trimmed();
     CALLSIGN = CALLSIGN.toUpper();
     ui->lineEdit->setText(CALLSIGN);
 
+    MainWindow::insertRegion();
+
     if (MainWindow::isThereAnyQSOinThisTur(CALLSIGN))
      {
          ui->label_6->setVisible(false);
-         ui->label_5->setVisible(true);
-         ui->label_5->setAlignment(Qt::AlignCenter);
-         ui->label_5->setText(" QSY  " + CALLSIGN);
+         ui->label_qsy->setVisible(true);
+         ui->label_qsy->setAlignment(Qt::AlignCenter);
+         ui->label_qsy->setText(" QSY  " + CALLSIGN);
 
     //Create QPalette here and set its Color and Color Role
                  QPalette *palette = new QPalette();
                  palette->setColor(QPalette::Base,Qt::red);
                  ui->lineEdit->setPalette(*palette);
+
+
+                 palette->setColor(QPalette::Base,Qt::white);
+                 ui->lineEdit_4->setPalette(*palette);
                  ui->lineEdit->setFocus();
      }
 
@@ -922,7 +786,11 @@ void MainWindow::isQSOforTab()
              QPalette *palette = new QPalette();
              palette->setColor(QPalette::Base,Qt::white);
              ui->lineEdit->setPalette(*palette);
-             ui->label_5->setVisible(false);
+             ui->label_callsign->setVisible(false);
+             ui->label_txn->setVisible(false);
+             ui->label_rxn->setVisible(false);
+             ui->label_region->setVisible(false);
+             ui->label_qsy->setVisible(false);
              ui->label_6->setVisible(false);
      }
 }
@@ -932,6 +800,22 @@ void MainWindow::on_otmenaButton_clicked()
     ui->lineEdit->clear();
     ui->lineEdit_3->clear();
     ui->lineEdit_4->clear();
+    ui->lineEdit->setFocus();
+
+    QPalette *palette = new QPalette();
+    palette->setColor(QPalette::Base,Qt::white);
+
+    ui->lineEdit->setPalette(*palette);
+    ui->lineEdit_4->setPalette(*palette);
+
+    ui->label_callsign->setVisible(false);
+    ui->label_txn->setVisible(false);
+    ui->label_rxn->setVisible(false);
+    ui->label_region->setVisible(false);
+    ui->label_qsy->setVisible(false);
+    ui->label_6->setVisible(false);
+
+
 }
 
 
@@ -1030,6 +914,13 @@ void MainWindow::load_all_records_to_tableWidget()
     //model->removeColumn(0);
     ui->tableView_3->setModel(model);
     ui->tableView_3->hideColumn(0);
+    ui->tableView_3->horizontalHeader()->resizeSection(1, 80);
+    ui->tableView_3->horizontalHeader()->resizeSection(2, 150);
+    ui->tableView_3->horizontalHeader()->resizeSection(3, 60);
+    ui->tableView_3->horizontalHeader()->resizeSection(4, 60);
+    ui->tableView_3->horizontalHeader()->resizeSection(5, 80);
+    ui->tableView_3->horizontalHeader()->resizeSection(6, 40);
+
     ui->tableView_3->scrollToBottom();
 
 //model eds
@@ -1059,5 +950,239 @@ void MainWindow::exportfromDB()
 
         ui->textEdit->append(Oneline);
     }
+
+}
+
+
+void MainWindow::emptyAllrec()
+{
+    mFilename = "";
+    ui->textEdit->setPlainText("");
+    ui->lineEdit->QLineEdit::clear();
+    ui->lineEdit_2->QLineEdit::clear();
+    ui->lineEdit_3->QLineEdit::clear();
+    ui->lineEdit_4->QLineEdit::clear();
+    ui->lineEdit_2->QLineEdit::insert("1");
+
+    dbconnection delrec;
+    delrec.deleteRecords();
+
+    MainWindow::refreshtable();
+
+
+}
+
+
+void MainWindow::on_otmenaButton_2_clicked()
+{
+    ui->lineEdit_4->setFocus();
+    MainWindow::on_write();
+
+}
+
+void MainWindow::insertRegion()
+{
+    QString CALLSIGN = ui->lineEdit->text();
+    CALLSIGN = CALLSIGN.trimmed();
+    CALLSIGN.toUpper();
+
+    dbconnection getregion;
+    QString iknowregion = getregion.getRegionForCallsign(CALLSIGN);
+    if (iknowregion != "")
+    {
+    ui->lineEdit_4->setText(iknowregion);
+
+    //Create QPalette here and set its Color and Color Role
+    QPalette *palette = new QPalette();
+    palette->setColor(QPalette::Base,Qt::green);
+    ui->lineEdit_4->setPalette(*palette);
+    }
+    else
+    {
+        QPalette *palette = new QPalette();
+        palette->setColor(QPalette::Base,Qt::white);
+        ui->lineEdit_4->setPalette(*palette);
+        ui->lineEdit_4->setText("");
+    }
+}
+
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::LanguageChange) {
+
+        //question = tr("All records will be deleted!");
+       //title = tr(title);
+        //title = tr("Attention!");
+
+
+    } else
+        QWidget::changeEvent(event);
+}
+
+
+void MainWindow::on_actionRussian_triggered()
+{
+    //change to russian
+    QTranslator translator;
+    translator.load("log73_ru.qm", ".");
+    QCoreApplication::installTranslator(&translator);
+    //qApp->installTranslator(&translator);
+
+
+    QTranslator qtTranslator;
+    qtTranslator.load("qt_ru.qm", ".");
+    //QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    QCoreApplication::installTranslator(&qtTranslator);
+
+
+    ui->retranslateUi(this);
+
+    QString CURRENTLANGUAGE = "RU";
+
+    MainWindow::curlangSet(CURRENTLANGUAGE);
+
+    QString message;
+    QString title;
+
+    title = title.fromUtf8("Информация");
+    message = message.fromUtf8("Закройте программу, и откройте её заново, чтобы применить русский язык");
+
+    QMessageBox::information(this, title,
+                             message, QMessageBox::Ok );
+
+}
+
+void MainWindow::on_actionEnglish_triggered()
+{
+    //change to russian
+    QTranslator translator;
+    translator.load("log73_ru.qm", ".");
+    QCoreApplication::removeTranslator(&translator);
+    //qApp->installTranslator(&translator);
+
+    QTranslator qtTranslator;
+    qtTranslator.load("qt_ru.qm", ".");
+    //QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    QCoreApplication::removeTranslator(&qtTranslator);
+
+    ui->retranslateUi(this);
+
+    QString CURRENTLANGUAGE = "EN";
+
+    MainWindow::curlangSet(CURRENTLANGUAGE);
+
+    QMessageBox::information(this, "Information",
+                             "Please restart the programm to take effect",
+                                               QMessageBox::Ok );
+
+}
+
+void MainWindow::curlangSet(QString lang)
+{
+    QSettings* settings = new QSettings(QDir::currentPath() + "/my_config_file.ini", QSettings::IniFormat);
+    settings->setValue("Lang", lang);
+    settings->sync();
+}
+
+QString MainWindow::curlangGet()
+{
+
+    QSettings* settings = new QSettings(QDir::currentPath() + "/my_config_file.ini", QSettings::IniFormat);
+
+
+
+    QString lang = settings->value("Lang").toString();
+
+//    if (lang == "RU")
+//    {
+//    }
+//    if (lang == "EN")
+//    {
+//    }
+
+
+        return lang;
+
+
+
+}
+
+
+void MainWindow::LastLangReadAndApply()
+{
+    QSettings* settings = new QSettings(QDir::currentPath() + "/my_config_file.ini", QSettings::IniFormat);
+
+
+
+    QString lang = settings->value("Lang").toString();
+
+    if (lang == "RU")
+    {
+
+        //change to russian
+        QTranslator translator;
+        translator.load("log73_ru.qm", ".");
+        QCoreApplication::installTranslator(&translator);
+        //qApp->installTranslator(&translator);
+
+
+//        QTranslator qtTranslator;
+//        qtTranslator.load("qt_ru.qm", ".");
+//        //QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+//        QCoreApplication::installTranslator(&qtTranslator);
+
+//        QApplication a(argc, argv);
+
+        QTranslator qtTranslator;
+        qtTranslator.load("qt_ru.qm", ".");
+        //QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+        QCoreApplication::installTranslator(&qtTranslator);
+
+        ui->retranslateUi(this);
+
+    }
+     if (lang == "EN")
+    {
+        //change to russian
+        QTranslator translator;
+        translator.load("log73_ru.qm", ".");
+        QCoreApplication::removeTranslator(&translator);
+        //qApp->installTranslator(&translator);
+
+
+
+        QTranslator qtTranslator;
+        qtTranslator.load("qt_ru.qm", ".");
+        //QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+        QCoreApplication::removeTranslator(&qtTranslator);
+
+        ui->retranslateUi(this);
+
+    }
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *e) {
+    if(e->key() != Qt::Key_Escape)
+        QWidget::keyPressEvent(e);
+    else {
+
+        MainWindow::on_otmenaButton_clicked();
+                }
+}
+
+
+void MainWindow::on_actionRegions_triggered()
+{
+    myRegions = new regions(this);
+    myRegions->show();
+
+}
+
+bool MainWindow::IsThereSuchRegion(QString region)
+{
+    dbconnection dbconObj;
+    return dbconObj.isThereSuchRegion(region);
+
 
 }

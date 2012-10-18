@@ -5,9 +5,11 @@
 #include <QtCore>
 #include <QtGui>
 #include "map.h"
+#include "regions.h"
 #include "about.h"
 #include "help.h"
 #include "reglament.h"
+#include "newdatabaseconfirmation.h"
 #include <QTableWidget>
 #include <QDateTime>
 #include <QSqlDatabase>
@@ -27,11 +29,25 @@ public:
 
     QString rstrip(const QString& str);
 
+//    QString question;
+//    QString title;
+
+
+
         void on_write();
         void refreshtable();
+        void emptyAllrec();
+        void changeEvent(QEvent *event);
+        void keyPressEvent(QKeyEvent *e);
+        void insertRegion();
+        void curlangSet(QString lang);
+        QString curlangGet();
+        void LastLangReadAndApply();
+        bool IsThereSuchRegion(QString region);
+
 
 public slots:
-    void retPressed();
+
     void myTimerSlot();
     void isQSOforTab();
     void exportfromDB();
@@ -39,7 +55,7 @@ public slots:
 
 private slots:
 
-
+    void retPressed();
 
     void on_actionNew_triggered();
 
@@ -76,15 +92,24 @@ private slots:
     void load_all_records_to_tableWidget();
 
 
+    void on_otmenaButton_2_clicked();
 
+    void on_actionRussian_triggered();
+
+    void on_actionEnglish_triggered();
+
+
+    void on_actionRegions_triggered();
 
 private:
     Ui::MainWindow *ui;
     QString mFilename;
     QString sameCALLSIGN;
     map *myMap;
+    regions *myRegions;
     about *myAbout;
     reglament *myReglament;
+    NewDatabaseConfirmation *mynewdatabaseconfirmation;
     help *myHelp;
     QTimer *timer;
 

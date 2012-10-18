@@ -16,22 +16,33 @@ SOURCES += main.cpp\
     about.cpp \
     help.cpp \
     dbconnection.cpp \
-    reglament.cpp
+    reglament.cpp \
+    newdatabaseconfirmation.cpp \
+    dialog.cpp \
+    regions.cpp
 
 HEADERS  += mainwindow.h \
     map.h \
     about.h \
     help.h \
     dbconnection.h \
-    reglament.h
+    reglament.h \
+    newdatabaseconfirmation.h \
+    dialog.h \
+    regions.h
 
 FORMS    += mainwindow.ui \
     map.ui \
     about.ui \
     help.ui \
-    reglament.ui
+    reglament.ui \
+    newdatabaseconfirmation.ui \
+    dialog.ui \
+    regions.ui
 
 RESOURCES += \
     AppResources.qrc
 
 RC_FILE = myapp.rc
+
+TRANSLATIONS = log73_ru.ts

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>371</width>
+    <width>452</width>
     <height>384</height>
    </rect>
   </property>
@@ -24,7 +24,7 @@
     <rect>
      <x>4</x>
      <y>4</y>
-     <width>361</width>
+     <width>421</width>
      <height>339</height>
     </rect>
    </property>
@@ -36,19 +36,19 @@
     </font>
    </property>
    <property name="title">
-    <string>Турнирный регламент</string>
+    <string>Tournament regulations</string>
    </property>
    <widget class="QGroupBox" name="groupBox_2">
     <property name="geometry">
      <rect>
-      <x>99</x>
+      <x>160</x>
       <y>60</y>
       <width>121</width>
       <height>251</height>
      </rect>
     </property>
     <property name="title">
-     <string>Начало</string>
+     <string>Begin</string>
     </property>
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
@@ -114,14 +114,14 @@ font: 75 12pt &quot;Ubuntu&quot;;</string>
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>280</x>
       <y>60</y>
       <width>120</width>
       <height>251</height>
      </rect>
     </property>
     <property name="title">
-     <string>Конец</string>
+     <string>End</string>
     </property>
     <widget class="QWidget" name="layoutWidget1">
      <property name="geometry">
@@ -187,9 +187,9 @@ font: 75 12pt &quot;Ubuntu&quot;;</string>
    <widget class="QWidget" name="layoutWidget2">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>30</x>
       <y>100</y>
-      <width>81</width>
+      <width>122</width>
       <height>201</height>
      </rect>
     </property>
@@ -209,7 +209,7 @@ font: 75 12pt &quot;Ubuntu&quot;;</string>
         <string notr="true">font: 75 14pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
-        <string>1-й тур</string>
+        <string>1-st tour</string>
        </property>
       </widget>
      </item>
@@ -228,7 +228,7 @@ font: 75 12pt &quot;Ubuntu&quot;;</string>
         <string notr="true">font: 75 14pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
-        <string>2-й тур</string>
+        <string>2-nd tour</string>
        </property>
       </widget>
      </item>
@@ -247,7 +247,7 @@ font: 75 12pt &quot;Ubuntu&quot;;</string>
         <string notr="true">font: 75 14pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
-        <string>3-й тур</string>
+        <string>3-d tour</string>
        </property>
       </widget>
      </item>
@@ -266,7 +266,7 @@ font: 75 12pt &quot;Ubuntu&quot;;</string>
         <string notr="true">font: 75 14pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
-        <string>4-й тур</string>
+        <string>4-th tour</string>
        </property>
       </widget>
      </item>
@@ -285,7 +285,7 @@ font: 75 12pt &quot;Ubuntu&quot;;</string>
         <string notr="true">font: 75 14pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
-        <string>5-й тур</string>
+        <string>5-th tour</string>
        </property>
       </widget>
      </item>
@@ -304,7 +304,7 @@ font: 75 12pt &quot;Ubuntu&quot;;</string>
         <string notr="true">font: 75 14pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
-        <string>6-й тур</string>
+        <string>6-th tour</string>
        </property>
       </widget>
      </item>
@@ -314,7 +314,7 @@ font: 75 12pt &quot;Ubuntu&quot;;</string>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>157</x>
+     <x>187</x>
      <y>346</y>
      <width>154</width>
      <height>31</height>
@@ -330,14 +330,14 @@ font: 75 12pt &quot;Ubuntu&quot;;</string>
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
-     <x>50</x>
+     <x>80</x>
      <y>350</y>
      <width>100</width>
      <height>24</height>
     </rect>
    </property>
    <property name="text">
-    <string>ПРИМЕНИТЬ</string>
+    <string>APPLY</string>
    </property>
   </widget>
  </widget>

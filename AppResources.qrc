@@ -11,5 +11,7 @@
         <file>Edit.png</file>
         <file>EditDone.png</file>
         <file>73.ico</file>
+        <file>ico_ru.gif</file>
+        <file>ico_en.gif</file>
     </qresource>
 </RCC>

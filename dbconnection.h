@@ -25,6 +25,9 @@ public:
 
     QString getOneLine(int id);
 
+    QString getRegionForCallsign(QString callsign);
+
+
     int getCountOfRows();
 
     QString glob_callsign;
@@ -39,8 +42,12 @@ public:
 
     void addCallsign(QString callsign, QString region);
     void addContest(QString time, QString callsign, QString txn, QString rxn, QString region, int tur );
+    void addRegion( QString region );
+    bool isThereSuchRegion(QString region);
     void showAllDBrecords();
+    void delEmptyRecordsFromContest();
 
+    void delEmptyRecords();
 
 
     void closeDatabase();

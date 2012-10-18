@@ -29,6 +29,11 @@ void dbconnection::populateDatabase()
     if (!qry.exec())
         qFatal( "Failed to create table contest" );
 
+    qry.prepare( "CREATE TABLE IF NOT EXISTS regions"
+                 "(id INTEGER PRIMARY KEY, region VARCHAR(30))" );
+    if (!qry.exec())
+        qFatal( "Failed to create table contest" );
+
 
 
 }
@@ -81,6 +86,21 @@ void dbconnection::addContest( QString time, QString callsign, QString txn, QStr
     qry.bindValue( ":rxn", rxn);
     qry.bindValue( ":region", region);
     qry.bindValue( ":tur", tur);
+    qry.exec();
+}
+
+void dbconnection::addRegion( QString region )
+{
+    int id = 0;
+    QSqlQuery qry;
+
+    qry.prepare( "SELECT COUNT(*) FROM regions");
+    qry.exec();
+    qry.next();
+    id=qry.value(0).toInt() +1;
+
+    qry.prepare( "INSERT INTO regions (region) VALUES(:region)");
+    qry.bindValue( ":region", region);
     qry.exec();
 }
 
@@ -380,5 +400,71 @@ void dbconnection::deleteRecords()
             if (!qry.exec())
             qFatal("Failed to delete records");
 
+
+}
+QString dbconnection::getRegionForCallsign(QString callsign)
+{
+
+
+    QSqlQuery qry;
+    QString region;
+
+    qry.prepare( "SELECT contest.region from contest WHERE contest.callsign = :callsign");
+    qry.bindValue(":callsign", callsign);
+
+    if ( !qry.exec())
+        qFatal("Failed to get records");
+
+    while (qry.next())
+        {
+        region = qry.value(0).toString();
+        qDebug() << region << "  =>>> getRegionForCallsign";
+        }
+
+    return region;
+
+}
+
+bool dbconnection::isThereSuchRegion(QString region)
+{
+    bool qso = false;
+    QSqlQuery qry;
+
+        qry.prepare( "SELECT id FROM regions WHERE region = :region");
+        qry.bindValue(":region", region);
+
+
+    if ( !qry.exec())
+        qFatal("Failed to get records in isThereAnyQSOinThisTur() function");
+
+int isThereAnyQSO = 0;
+    while (qry.next())
+     isThereAnyQSO= qry.value(0).toInt();
+   // qDebug() << isThereAnyQSO << "isThereSuchRegion";
+
+if (isThereAnyQSO > 0)
+{
+    qso = true;
+}
+
+return qso;
+
+}
+
+void dbconnection::delEmptyRecords()
+{
+     QSqlQuery qry;
+     qry.prepare( "DELETE FROM regions WHERE region = '' ");
+                  if ( !qry.exec())
+                      qFatal("Failed to get records in delEmptyRecords() function");
+
+}
+
+void dbconnection::delEmptyRecordsFromContest()
+{
+     QSqlQuery qry;
+     qry.prepare( "DELETE FROM contest WHERE txn = '' ");
+                  if ( !qry.exec())
+                      qFatal("Failed to get records in delEmptyRecordsFromContest() function");
 
 }

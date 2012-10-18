@@ -4,15 +4,17 @@
 #include <QSettings>
 #include <QDir>
 #include <QTime>
+#include "mainwindow.h"
 
 reglament::reglament(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::reglament)
 {
+
     ui->setupUi(this);
+
     reglament::settingsRead();
 
-    //reglament::tur();
 }
 
 reglament::~reglament()
@@ -123,6 +125,59 @@ void reglament::settingsRead()
 {
 
     QSettings* settings = new QSettings(QDir::currentPath() + "/my_config_file.ini", QSettings::IniFormat);
+
+
+
+    QString lang = settings->value("Lang").toString();
+
+    if (lang == "RU")
+    {
+
+        //change to russian
+        QTranslator translator;
+        translator.load("log73_ru.qm", ".");
+        QCoreApplication::installTranslator(&translator);
+        //qApp->installTranslator(&translator);
+
+
+        QTranslator qtTranslator;
+        qtTranslator.load("qt_ru.qm", ".");
+        //QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+        QCoreApplication::installTranslator(&qtTranslator);
+
+
+        ui->retranslateUi(this);
+
+    }
+     if (lang == "EN")
+    {
+        //change to russian
+        QTranslator translator;
+        translator.load("log73_ru.qm", ".");
+        QCoreApplication::removeTranslator(&translator);
+        //qApp->installTranslator(&translator);
+
+
+        QTranslator qtTranslator;
+        qtTranslator.load("qt_ru.qm", ".");
+        //QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+        QCoreApplication::removeTranslator(&qtTranslator);
+
+        ui->retranslateUi(this);
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
